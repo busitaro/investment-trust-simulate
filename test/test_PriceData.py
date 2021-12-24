@@ -4,6 +4,9 @@ import mock
 from datetime import datetime
 from datetime import timedelta
 
+import pandas as pd
+from pandas.util.testing import assert_series_equal
+
 from data.price import PriceData
 
 
@@ -20,6 +23,8 @@ class TestPriceData(unittest.TestCase):
             'test_exists2': 'test/file/test.csv',
             'test_get_continuous_date1': 'test/file/test_date.csv',
             'test_get_next_buy_date1': 'test/file/test_date.csv',
+            'test_search_by_date1': 'test/file/test.csv',
+            'test_search_by_date2': 'test/file/test.csv',
         }
         self.priceData = PriceData(read_file[case])
 
@@ -175,6 +180,37 @@ class TestPriceData(unittest.TestCase):
                 expected,
                 result
             )
+
+    def test_search_by_date1(self):
+        self.setUpData(sys._getframe().f_code.co_name)
+        date = datetime(2021, 11, 11)
+        expected = pd.Series(
+            [datetime(2021, 11, 11), 11111, -11111, 12345],
+            index=['date', 'base_price', 'compare', 'total_assets']
+        )
+        result = self.priceData._PriceData__search_by_date(date)
+        try:
+            assert_series_equal(
+                expected,
+                result,
+                check_names=False
+            )
+        except Exception as ex:
+            print('--------------- expected ---------------')
+            print(expected)
+            print('--------------- actual ---------------')
+            print(result)
+            raise(ex)
+
+    def test_search_by_date2(self):
+        self.setUpData(sys._getframe().f_code.co_name)
+        date = datetime(2021, 11, 13)
+        expected = None
+        result = self.priceData._PriceData__search_by_date(date)
+        self.assertEqual(
+            expected,
+            result,
+        )
 
 
 if __name__ == '__main__':
